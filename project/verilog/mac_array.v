@@ -30,11 +30,12 @@ module mac_array (clk, reset, out_s, in_w, in_n, inst_w, valid);
       mac_row #(.bw(bw), .psum_bw(psum_bw)) mac_row_instance (
          .clk(clk),
          .reset(reset),
-	 .in_w(in_w[bw*i-1:bw*(i-1)]),
-	 .inst_w(inst_w_temp[2*i-1:2*(i-1)]),
-	 .in_n(temp[psum_bw*col*i-1:psum_bw*col*(i-1)]),
+         .in_w(in_w[bw*i-1:bw*(i-1)]),
+         .inst_w(inst_w_temp[2*i-1:2*(i-1)]),
+         .in_n(temp[psum_bw*col*i-1:psum_bw*col*(i-1)]),
          .valid(valid_temp[col*i-1:col*(i-1)]),
-	 .out_s(temp[psum_bw*col*(i+1)-1:psum_bw*col*(i)]));
+         .out_s(temp[psum_bw*col*(i+1)-1:psum_bw*col*(i)])
+      );
   end
 
   always @ (posedge clk) begin
