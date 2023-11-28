@@ -1,6 +1,6 @@
-verilog/mac.v
-verilog/mac_tile.v
-verilog/mac_row.v
-verilog/mac_array.v
-verilog/core_tb.v
+verilog/fifo_mux_2_1.v
+verilog/fifo_mux_8_1.v
+verilog/fifo_depth8.v
+verilog/L0.v
+verilog/corelet.v
 
