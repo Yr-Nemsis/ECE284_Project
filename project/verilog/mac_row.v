@@ -35,6 +35,7 @@ module mac_row (clk, out_s, in_w, in_n, valid, inst_w, reset);
     );
   end
 
+
   for(i = 1; i < col+1; i=i+1) begin : valid_gen
     assign valid[i-1] = inst_wires[2*i-1];
   end

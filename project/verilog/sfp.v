@@ -10,7 +10,7 @@ input acc;
 input relu;
 input reset;
 
-input signed [bw-1:0] in;
+input signed [psum_bw-1:0] in;
 input signed [psum_bw-1:0] thres;
 
 output  signed [psum_bw-1:0] out;

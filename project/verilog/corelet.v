@@ -29,8 +29,8 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
   // inst[5] == 1 write to L0
   l0 #(.bw(bw), .row(row)) L0_instance(
     .clk(clk),
-    .wr(inst[5]),
-    .rd(inst[4]),
+    .wr(inst[2]),
+    .rd(inst[3]),
     .reset(reset),
     .in(in_mac),
     .out(l0_mac),
@@ -43,7 +43,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     .reset(reset),
     .in_w(l0_mac),
     .inst_w(inst[1:0]),
-    .in_n('b0),
+    .in_n(128'b0),
     .valid(out_s_valid),
     .out_s(mac_out)
   );
@@ -62,7 +62,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
 
   genvar i;
   for(i = 0; i < col; i = i +1)
-  begin
+  begin : sfp_block
     sfp  #(.bw(bw), .psum_bw(psum_bw)) sfp_instance(
       .clk(clk),
       .acc(inst[33]),

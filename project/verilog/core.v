@@ -28,7 +28,7 @@ module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
   );
 
 
-  sram_32b_w128 weight_input_sram(
+  sram_32b_w2048 weight_input_sram(
     .CLK(clk), 
     .D(D_xmem), 
     .Q(L1_out), 
@@ -37,7 +37,7 @@ module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
     .A(inst[17:7]) // 11 bit address 
   );
   
-  sram_128b_w1024 psum_sram(
+  sram_128b_w2048 psum_sram(
     .CLK(clk), 
     .D(ofifo_out), 
     .Q(sfp_in), 

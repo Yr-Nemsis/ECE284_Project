@@ -29,13 +29,13 @@ module ofifo (clk, in, out, rd, wr, o_full, reset, o_ready, o_valid);
   assign o_valid = fifo_full[0] ; // when i have a vector to output (fifo0 is full)
 
   for (i=0; i<col ; i=i+1) begin : col_num
-      fifo_depth8 #(.psum_bw(psum_bw)) fifo_instance (
+      fifo_depth8 #(.bw(psum_bw)) fifo_instance (
 	      .rd_clk(clk),
 	      .wr_clk(clk),
 	      .rd(rd),
 	      .wr(wr[i]),
         .o_empty(fifo_empty[i]),
-        .o_full(fifo_full),
+        .o_full(fifo_full[i]),
 	      .in(in[psum_bw*(i+1)-1:psum_bw*i]),
 	      .out(out[psum_bw*(i+1)-1:psum_bw*i]),
         .reset(reset)

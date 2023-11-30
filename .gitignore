@@ -1,1 +1,3 @@
 .DS_Store
+compiled
+core_tb.vcd

@@ -199,16 +199,39 @@ initial begin
 
 
     /////// Kernel data writing to L0 ///////
-    //...
-    /////////////////////////////////////
+    A_xmem = 11'b10000000000;
+    
 
+    for (t=0; t<col; t=t+1) begin  
+      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
+      if (t>0) begin
+        A_xmem = A_xmem + 1;
+        l0_wr = 1'b1;
+      end
+      #0.5 clk = 1'b1;  
+    end
+    // Wait for things to settle
+    #0.5 clk = 1'b0; 
+    #0.5 clk = 1'b1;
+
+    // Prepare for next stage
+    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
+    load = 'b1; l0_wr = 0;
+    #0.5 clk = 1'b1; 
+    /////////////////////////////////////
 
 
     /////// Kernel loading to PEs ///////
-    //...
+    for (t=0; t<col; t=t+1) begin  
+      #0.5 clk = 1'b0;  l0_rd = 1'b1; 
+      #0.5 clk = 1'b1;  
+    end
+
+    #0.5 clk = 1'b0;  l0_rd = 'b0;
+    #0.5 clk = 1'b1; 
     /////////////////////////////////////
   
-
+    
 
     ////// provide some intermission to clear up the kernel loading ///
     #0.5 clk = 1'b0;  load = 0; l0_rd = 0;
@@ -222,13 +245,30 @@ initial begin
     /////////////////////////////////////
 
 
-
+    
     /////// Activation data writing to L0 ///////
-    //...
+     A_xmem = 11'b00000000000;
+
+     for (t=0; t<col; t=t+1) begin  
+      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
+      if (t>0) begin
+        A_xmem = A_xmem + 1;
+        l0_wr = 1'b1;
+      end
+      #0.5 clk = 1'b1;  
+    end
+    // Wait for things to settle
+    #0.5 clk = 1'b0; 
+    #0.5 clk = 1'b1;
+
+    // Prepare for next stage
+    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
+    load = 'b1; l0_wr = 0;
+    #0.5 clk = 1'b1; 
     /////////////////////////////////////
 
 
-
+    $finish();
     /////// Execution ///////
     //...
     /////////////////////////////////////
