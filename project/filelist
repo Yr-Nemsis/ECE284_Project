@@ -1,6 +1,6 @@
 verilog/fifo_mux_2_1.v
 verilog/fifo_mux_8_1.v
 verilog/fifo_depth8.v
-verilog/L0.v
+verilog/l0.v
 verilog/corelet.v
 
