@@ -34,11 +34,8 @@ module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
     .Q(L1_out), 
     .CEN(inst[19]), // inst[19] is CEN_xmem
     .WEN(inst[18]), // inst[18] is WEN_xmem 
-    .A(inst[17:7]) // 11 bits address 
+    .A(inst[17:7]) // 11 bit address 
   );
-
-
-
   
   sram_128b_w1024 psum_sram(
     .CLK(clk), 

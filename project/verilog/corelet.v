@@ -9,10 +9,13 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
   input [33:0] inst;
 
   input [col*bw-1:0] in_mac;
+  
+  
   output [psum_bw*col-1:0] out_mac;
+  output ofifo_valid;
 
   input [col*psum_bw-1:0] in_sfp;
-  input [col*psum_bw-1:0] out_sfp;
+  output [col*psum_bw-1:0] out_sfp;
 
   //wire [1:0] l0_status; // l0_status[0] => full, l0_status_[1] => ready
 
@@ -30,7 +33,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     .rd(inst[4]),
     .reset(reset),
     .in(in_mac),
-    .out(lo_mac),
+    .out(l0_mac),
     .o_full(),
     .o_ready()
   );
@@ -57,15 +60,20 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     .o_valid(ofifo_valid)
   );
 
-  sfp  #(.bw(bw), .psum_bw(psum_bw)) sfp_instance(
-    .clk(clk),
-    .acc(),
-    .relu(),
-    .reset(reset),
-    .in(sfp_in),
-    .thres(),
-    .out()
-  );
+  genvar i;
+  for(i = 0; i < col; i = i +1)
+  begin
+    sfp  #(.bw(bw), .psum_bw(psum_bw)) sfp_instance(
+      .clk(clk),
+      .acc(inst[33]),
+      .relu(),
+      .reset(reset),
+      .in(in_sfp[psum_bw*(i+1)-1:psum_bw*i]),
+      .thres(),
+      .out(out_sfp[psum_bw*(i+1)-1:psum_bw*i])
+    );
+  end
+  
 
 
 endmodule

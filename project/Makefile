@@ -1,7 +1,7 @@
 all: iveri irun
 
 iveri:
-	iverilog -o compiled -c filelist
+	iverilog -Wall -o compiled -c filelist
 
 irun:
 	vvp compiled

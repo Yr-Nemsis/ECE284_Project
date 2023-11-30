@@ -199,13 +199,13 @@ initial begin
 
 
     /////// Kernel data writing to L0 ///////
-    ...
+    //...
     /////////////////////////////////////
 
 
 
     /////// Kernel loading to PEs ///////
-    ...
+    //...
     /////////////////////////////////////
   
 
@@ -224,13 +224,13 @@ initial begin
 
 
     /////// Activation data writing to L0 ///////
-    ...
+    //...
     /////////////////////////////////////
 
 
 
     /////// Execution ///////
-    ...
+    //...
     /////////////////////////////////////
 
 
@@ -238,7 +238,7 @@ initial begin
     //////// OFIFO READ ////////
     // Ideally, OFIFO should be read while execution, but we have enough ofifo
     // depth so we can fetch out after execution.
-    ...
+    //...
     /////////////////////////////////////
 
 
