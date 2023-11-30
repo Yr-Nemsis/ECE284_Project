@@ -1,4 +1,4 @@
-module corelet(clk, reset, in, out, inst, l0_status);
+module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
 
   parameter bw = 4;
   parameter psum_bw = 16;
@@ -7,11 +7,20 @@ module corelet(clk, reset, in, out, inst, l0_status);
 
   input clk, reset;
   input [33:0] inst;
-  input [col*bw-1:0] in;
-  input [col*bw-1:0] out;
-  output [1:0] l0_status; // l0_status[0] => full, l0_status_[1] => ready
 
+  input [col*bw-1:0] in_mac;
+  output [psum_bw*col-1:0] out_mac;
 
+  input [col*psum_bw-1:0] in_sfp;
+  input [col*psum_bw-1:0] out_sfp;
+
+  //wire [1:0] l0_status; // l0_status[0] => full, l0_status_[1] => ready
+
+  wire [bw*row-1:0] l0_mac;
+
+  wire [col-1:0] out_s_valid;
+
+  wire [psum_bw*col-1:0] mac_out;
 
   // inst[4] == 1 then read from L0
   // inst[5] == 1 write to L0
@@ -20,29 +29,43 @@ module corelet(clk, reset, in, out, inst, l0_status);
     .wr(inst[5]),
     .rd(inst[4]),
     .reset(reset),
-    .in(in),
-    .out(out),
-    .o_full(l0_status[0]),
-    .o_ready(l0_status[1])
+    .in(in_mac),
+    .out(lo_mac),
+    .o_full(),
+    .o_ready()
   );
-/*
+
   mac_array #(.bw(bw), .psum_bw(psum_bw)) mac_array_instance(
     .clk(clk),
     .reset(reset),
-    .in_w(),
-    .inst_w(),
-    .in_n(),
-    .valid(),
-    .out_s()
+    .in_w(l0_mac),
+    .inst_w(inst[1:0]),
+    .in_n('b0),
+    .valid(out_s_valid),
+    .out_s(mac_out)
   );
 
-  ofifo #(.bw(psum_bw), .psum_bw(psum_bw)) ofifo_instance(
-   
+  ofifo #(.psum_bw(psum_bw), .col(col)) ofifo_instance(
+    .clk(clk),
+    .reset(reset),
+    .wr(out_s_valid),
+    .rd(inst[6]),
+    .in(mac_out),
+    .out(out_mac),
+    .o_ready(),
+    .o_full(),
+    .o_valid(ofifo_valid)
   );
 
   sfp  #(.bw(bw), .psum_bw(psum_bw)) sfp_instance(
-
+    .clk(clk),
+    .acc(),
+    .relu(),
+    .reset(reset),
+    .in(sfp_in),
+    .thres(),
+    .out()
   );
-*/
+
 
 endmodule

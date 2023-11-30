@@ -11,34 +11,42 @@ module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
   input [bw*row-1:0] D_xmem;
   output [col*psum_bw-1:0] sfp_out;
 
+  wire [31:0] L1_out; // connect weight & act SRAM to corelet
 
-  corelet #(#(.bw(bw), .psum_bw(psum_bw))) corelet_instance(
+  wire [psum_bw*col-1:0] ofifo_out;
+  wire [psum_bw*col-1:0] sfp_in;
 
+  corelet #(.bw(bw), .psum_bw(psum_bw)) corelet_instance(
+    .clk(clk), 
+    .reset(reset),
+    .in_mac(L1_out),
+    .in_sfp(sfp_in),
+    .out_mac(ofifo_out),
+    .out_sfp(sfp_out),
+    .inst(inst),
+    .ofifo_valid(ofifo_valid)
   );
 
-  // TODO:
-  // change size of this SRAM. Must fit all the inputs and weights.
-  // SRAM should dispcatch 1 vector (32 bits) per cycle
-  // 
+
   sram_32b_w128 weight_input_sram(
     .CLK(clk), 
     .D(D_xmem), 
-    .Q(), 
-    .CEN(), 
-    .WEN(), 
-    .A()
+    .Q(L1_out), 
+    .CEN(inst[19]), // inst[19] is CEN_xmem
+    .WEN(inst[18]), // inst[18] is WEN_xmem 
+    .A(inst[17:7]) // 11 bits address 
   );
 
 
 
-  // Don't know how big psum_sram needs to be. Assuming 1024 entries of 12 bits for now.
-  sram_12b_w1024 psum_sram(
+  
+  sram_128b_w1024 psum_sram(
     .CLK(clk), 
-    .D(), 
-    .Q(), 
-    .CEN(), 
-    .WEN(), 
-    .A()
+    .D(ofifo_out), 
+    .Q(sfp_in), 
+    .CEN(inst[32]), 
+    .WEN(inst[31]), 
+    .A(inst[30:20])
   );
 
 

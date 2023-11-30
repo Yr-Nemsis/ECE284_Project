@@ -1,11 +1,11 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
-module sram_12b_w1024 (CLK, D, Q, CEN, WEN, A);
+module sram_128b_w1024 (CLK, D, Q, CEN, WEN, A);
 
-  parameter bw = 12;
+  parameter bw = 128;
   parameter num = 1024;
 
-  parameter idx_bits = 10
+  parameter idx_bits = 10;
   input  CLK;
   input  WEN;
   input  CEN;
