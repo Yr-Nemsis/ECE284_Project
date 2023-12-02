@@ -35,12 +35,12 @@ always @(posedge clk) begin
         inst_q[1] <= inst_w[1];
         
         if(inst_w[0] | inst_w[1]) begin
-             a_q <= in_w;
+            a_q <= in_w;
         end
 
         if(inst_w[0] & load_ready_q) begin
-             b_q <= in_w;
-             load_ready_q <= 'b0;
+            b_q <= in_w;
+            load_ready_q <= 'b0;
         end
 
         if(!load_ready_q) begin

@@ -10,7 +10,7 @@ parameter len_kij = 9;
 parameter len_onij = 16;
 parameter col = 8;
 parameter row = 8;
-parameter len_nij = 36;
+parameter len_nij = 64;
 
 reg clk = 0;
 reg reset = 1;
@@ -83,8 +83,6 @@ assign inst_q[2]   = l0_wr_q;
 assign inst_q[1]   = execute_q; 
 assign inst_q[0]   = load_q; 
 
-reg user_mode_q;
-reg user_mode;
 
 core  #(.bw(bw), .col(col), .row(row)) core_instance (
 	  .clk(clk), 
@@ -93,8 +91,7 @@ core  #(.bw(bw), .col(col), .row(row)) core_instance (
     .D_xmem(D_xmem_q), 
     .sfp_out(sfp_out), 
 	  .reset(reset),
-    .L0_full(L0_full),
-    .user_mode(user_mode_q)
+    .L0_full(L0_full)
   ); 
 
 
@@ -112,7 +109,6 @@ initial begin
   l0_wr    = 0;
   execute  = 0;
   load     = 0;
-  user_mode = 0;
 
 
   $dumpfile("core_tb.vcd");
@@ -141,7 +137,7 @@ initial begin
   /////////////////////////
 
   /////// Activation data writing to memory ///////
-  for (t=0; t<len_nij; t=t+1) begin  
+  for (t=0; t<len_nij+2; t=t+1) begin  
     #0.5 clk = 1'b0;  x_scan_file = $fscanf(x_file,"%32b", D_xmem); WEN_xmem = 0; CEN_xmem = 0; if (t>0) A_xmem = A_xmem + 1;
     #0.5 clk = 1'b1;   
   end
@@ -152,7 +148,7 @@ initial begin
   $fclose(x_file);
   /////////////////////////////////////////////////
 
-
+   A_pmem = 11'b00000000000;
   for (kij=0; kij<9; kij=kij+1) begin  // kij loop
 
     case(kij)
@@ -207,7 +203,7 @@ initial begin
     
 
 
-    /////// Kernel data writing to L0 while sending it to mac array///////
+    /////// Kernel data writing to L0 ///////
     A_xmem = 11'b10000000000;
     
     for (t=0; t<col; t=t+1) begin  
@@ -215,120 +211,80 @@ initial begin
       if (t>0) begin
         A_xmem = A_xmem + 1;
         l0_wr = 1'b1;
-        load = 1'b1;
         l0_rd = 1'b1;
+        load = 1'b1;
       end
       #0.5 clk = 1'b1;  
     end
-
-    // Finish writing data to L0
-    #0.5 clk = 1'b0;
-    #0.5 clk = 1'b1; 
-
-    //Prepare for next stage
-    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
-    load = 'b1; l0_wr = 0;
-    #0.5 clk = 1'b1; 
-    /////////////////////////////////////
-
     
-    /////// Finish Kernel loading to PEs ///////
-    for (t=0; t<col-1; t=t+1) begin  
-      #0.5 clk = 1'b0;  l0_rd = 1'b1; 
-      #0.5 clk = 1'b1;  
+    // Finish writing data to L0 needs 8 more cycles
+    for(t = 0; t < 8; t = t + 1) begin
+      #0.5 clk = 1'b0; 
+      if(t>0) begin
+        l0_wr = 1'b0;
+      end
+      #0.5 clk = 1'b1; 
     end
-    
-    #0.5 clk = 1'b0;  l0_rd = 'b1;
-    #0.5 clk = 1'b1; 
-    /////////////////////////////////////
-  
-    
 
-    ////// provide some intermission to clear up the kernel loading ///
-    #0.5 clk = 1'b0;  load = 0; l0_rd =  1'b0;
+    /////////////////////////////////////
+
+    
+    ////// provide some intermission to clear up the kernel loading and clean up l0///
+    #0.5 clk = 1'b0;  load = 0; l0_rd =  1'b1;
     #0.5 clk = 1'b1;  
     
 
-    for (i=0; i<10 ; i=i+1) begin
+    for (i=0; i < 10 ; i=i+1) begin
+      #0.5 clk = 1'b0;
+      #0.5 clk = 1'b1;  
+    end
+
+    // turn off l0 reading
+    l0_rd = 1'b0;
+    for (i=0; i < 7 ; i=i+1) begin
       #0.5 clk = 1'b0;
       #0.5 clk = 1'b1;  
     end
     /////////////////////////////////////
+    
+    
+    
+    /////// Activation data writing to L0 and all other steps ///////
+     //A_xmem = 11'b00000000000;
+    A_xmem = 11'd00000000000; 
+   
 
+    for(t = 0; t < 81; t = t+1) begin
+      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0; l0_wr = 1'b1; WEN_pmem = 0; CEN_pmem = 0;
+        if (t < len_nij+2) begin
+          A_xmem = A_xmem + 1;
+        end
+        l0_rd = 1'b1; execute = 1'b1;
+        if(t > 75) begin
+          l0_rd = 1'b0;
+        end
+        if(t > 16) begin
+          ofifo_rd = 1'b1;
+        end
+        if(t > 17) begin
+          A_pmem = A_pmem + 1;
+        end
 
-    j = 0;
-    /////// Activation data writing to L0 ///////
-     A_xmem = 11'b00000000000;
-     A_pmem = 11'b00000000000;
-
-     for (t=0; t<len_nij * 2; t=t+1) begin  
-      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0; l0_wr = 1'b1;  WEN_pmem = 0; CEN_pmem = 0;
-      if (t>0 && ~L0_full) begin
-        A_xmem = A_xmem + 1;
-        l0_wr = 1'b1;
-      end
-      else
-      begin
-        l0_wr = 1'b0;
-      end
-
-      if(t > 1) begin
-        l0_rd = 1'b1;
-        execute = 1'b1;
-      end
-
-      
-      #0.5 clk = 1'b1;  
+      #0.5 clk = 1'b1;
     end
     
+    // Turn off writing to pmem
+    #0.5 clk = 1'b0; WEN_pmem = 1; CEN_pmem = 1; l0_wr = 1'b0;
+    #0.5 clk = 1'b1;
 
-
-    // Prepare for next stage
-    // #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
-    // execute = 'b1; l0_wr = 0;
-    // #0.5 clk = 1'b1; 
-    /////////////////////////////////////
-
-
-    
-    // /////// Execution ///////
-    //  for (t=0; t<len_nij; t=t+1) begin  
-    //   #0.5 clk = 1'b0; WEN_xmem = 1; CEN_xmem = 0;
-    //   l0_rd = 1'b1;
-    //   if (t>0) begin
-    //     if(!L0_full)
-    //     begin
-    //       A_xmem = A_xmem + 1;
-    //       l0_wr = 1'b1;
-    //     end
-    //     else
-    //     begin
-    //       l0_wr = 1'b0;
-    //     end
-    //   end
-    //   #0.5 clk = 1'b1;  
-    // end
-
-    // #0.5 clk = 1'b0;  l0_rd = 'b0;
-    // #0.5 clk = 1'b1; 
-    /////////////////////////////////////
-
-
-
-
-
+  
     $finish();
-
-    //////// OFIFO READ ////////
-    // Ideally, OFIFO should be read while execution, but we have enough ofifo
-    // depth so we can fetch out after execution.
-    //...
-    /////////////////////////////////////
+    
 
 
   end  // end of kij loop
 
-
+  
   ////////// Accumulation /////////
   acc_file = $fopen("acc_address.txt", "r");
   out_file = $fopen("out.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
@@ -419,7 +375,6 @@ always @ (posedge clk) begin
    l0_wr_q    <= l0_wr ;
    execute_q  <= execute;
    load_q     <= load;
-   user_mode_q <= user_mode;
 end
 
 

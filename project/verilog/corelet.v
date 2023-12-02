@@ -53,7 +53,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid, 
     .clk(clk),
     .reset(reset),
     .wr(out_s_valid),
-    //.rd(inst[6]), Done automatiaca;y for timing
+    .rd(inst[6]), 
     .in(mac_out),
     .out(out_mac),
     .o_ready(),
@@ -70,7 +70,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid, 
       .relu(),
       .reset(reset),
       .in(in_sfp[psum_bw*(i+1)-1:psum_bw*i]),
-      .thres(),
+      .thres({(psum_bw){1'b0}}),
       .out(out_sfp[psum_bw*(i+1)-1:psum_bw*i])
     );
   end
