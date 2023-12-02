@@ -1,4 +1,4 @@
-module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
+module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid, L0_full);
 
   parameter bw = 4;
   parameter psum_bw = 16;
@@ -13,6 +13,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
   
   output [psum_bw*col-1:0] out_mac;
   output ofifo_valid;
+  output L0_full;
 
   input [col*psum_bw-1:0] in_sfp;
   output [col*psum_bw-1:0] out_sfp;
@@ -34,7 +35,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     .reset(reset),
     .in(in_mac),
     .out(l0_mac),
-    .o_full(),
+    .o_full(L0_full),
     .o_ready()
   );
 
@@ -52,7 +53,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     .clk(clk),
     .reset(reset),
     .wr(out_s_valid),
-    .rd(inst[6]),
+    //.rd(inst[6]), Done automatiaca;y for timing
     .in(mac_out),
     .out(out_mac),
     .o_ready(),

@@ -58,6 +58,8 @@ reg [8*30:1] w_file_name;
 wire ofifo_valid;
 wire [col*psum_bw-1:0] sfp_out;
 
+wire L0_full;
+
 integer x_file, x_scan_file ; // file_handler
 integer w_file, w_scan_file ; // file_handler
 integer acc_file, acc_scan_file ; // file_handler
@@ -81,14 +83,19 @@ assign inst_q[2]   = l0_wr_q;
 assign inst_q[1]   = execute_q; 
 assign inst_q[0]   = load_q; 
 
+reg user_mode_q;
+reg user_mode;
 
 core  #(.bw(bw), .col(col), .row(row)) core_instance (
-	.clk(clk), 
-	.inst(inst_q),
-	.ofifo_valid(ofifo_valid),
-  .D_xmem(D_xmem_q), 
-  .sfp_out(sfp_out), 
-	.reset(reset)); 
+	  .clk(clk), 
+	  .inst(inst_q),
+	  .ofifo_valid(ofifo_valid),
+    .D_xmem(D_xmem_q), 
+    .sfp_out(sfp_out), 
+	  .reset(reset),
+    .L0_full(L0_full),
+    .user_mode(user_mode_q)
+  ); 
 
 
 initial begin 
@@ -105,6 +112,8 @@ initial begin
   l0_wr    = 0;
   execute  = 0;
   load     = 0;
+  user_mode = 0;
+
 
   $dumpfile("core_tb.vcd");
   $dumpvars(0,core_tb);
@@ -195,48 +204,50 @@ initial begin
     #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
-
-
-
-    /////// Kernel data writing to L0 ///////
-    A_xmem = 11'b10000000000;
     
 
+
+    /////// Kernel data writing to L0 while sending it to mac array///////
+    A_xmem = 11'b10000000000;
+    
     for (t=0; t<col; t=t+1) begin  
       #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
       if (t>0) begin
         A_xmem = A_xmem + 1;
         l0_wr = 1'b1;
+        load = 1'b1;
+        l0_rd = 1'b1;
       end
       #0.5 clk = 1'b1;  
     end
-    // Wait for things to settle
-    #0.5 clk = 1'b0; 
-    #0.5 clk = 1'b1;
 
-    // Prepare for next stage
+    // Finish writing data to L0
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1; 
+
+    //Prepare for next stage
     #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
     load = 'b1; l0_wr = 0;
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
 
-
-    /////// Kernel loading to PEs ///////
-    for (t=0; t<col; t=t+1) begin  
+    
+    /////// Finish Kernel loading to PEs ///////
+    for (t=0; t<col-1; t=t+1) begin  
       #0.5 clk = 1'b0;  l0_rd = 1'b1; 
       #0.5 clk = 1'b1;  
     end
-
-    #0.5 clk = 1'b0;  l0_rd = 'b0;
+    
+    #0.5 clk = 1'b0;  l0_rd = 'b1;
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
   
     
 
     ////// provide some intermission to clear up the kernel loading ///
-    #0.5 clk = 1'b0;  load = 0; l0_rd = 0;
+    #0.5 clk = 1'b0;  load = 0; l0_rd =  1'b0;
     #0.5 clk = 1'b1;  
-  
+    
 
     for (i=0; i<10 ; i=i+1) begin
       #0.5 clk = 1'b0;
@@ -245,35 +256,68 @@ initial begin
     /////////////////////////////////////
 
 
-    
+    j = 0;
     /////// Activation data writing to L0 ///////
      A_xmem = 11'b00000000000;
+     A_pmem = 11'b00000000000;
 
-     for (t=0; t<col; t=t+1) begin  
-      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
-      if (t>0) begin
+     for (t=0; t<len_nij * 2; t=t+1) begin  
+      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0; l0_wr = 1'b1;  WEN_pmem = 0; CEN_pmem = 0;
+      if (t>0 && ~L0_full) begin
         A_xmem = A_xmem + 1;
         l0_wr = 1'b1;
       end
+      else
+      begin
+        l0_wr = 1'b0;
+      end
+
+      if(t > 1) begin
+        l0_rd = 1'b1;
+        execute = 1'b1;
+      end
+
+      
       #0.5 clk = 1'b1;  
     end
-    // Wait for things to settle
-    #0.5 clk = 1'b0; 
-    #0.5 clk = 1'b1;
+    
+
 
     // Prepare for next stage
-    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
-    load = 'b1; l0_wr = 0;
-    #0.5 clk = 1'b1; 
+    // #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0; 
+    // execute = 'b1; l0_wr = 0;
+    // #0.5 clk = 1'b1; 
     /////////////////////////////////////
+
+
+    
+    // /////// Execution ///////
+    //  for (t=0; t<len_nij; t=t+1) begin  
+    //   #0.5 clk = 1'b0; WEN_xmem = 1; CEN_xmem = 0;
+    //   l0_rd = 1'b1;
+    //   if (t>0) begin
+    //     if(!L0_full)
+    //     begin
+    //       A_xmem = A_xmem + 1;
+    //       l0_wr = 1'b1;
+    //     end
+    //     else
+    //     begin
+    //       l0_wr = 1'b0;
+    //     end
+    //   end
+    //   #0.5 clk = 1'b1;  
+    // end
+
+    // #0.5 clk = 1'b0;  l0_rd = 'b0;
+    // #0.5 clk = 1'b1; 
+    /////////////////////////////////////
+
+
+
 
 
     $finish();
-    /////// Execution ///////
-    //...
-    /////////////////////////////////////
-
-
 
     //////// OFIFO READ ////////
     // Ideally, OFIFO should be read while execution, but we have enough ofifo
@@ -375,6 +419,7 @@ always @ (posedge clk) begin
    l0_wr_q    <= l0_wr ;
    execute_q  <= execute;
    load_q     <= load;
+   user_mode_q <= user_mode;
 end
 
 
