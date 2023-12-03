@@ -10,7 +10,7 @@ parameter len_kij = 9;
 parameter len_onij = 16;
 parameter col = 8;
 parameter row = 8;
-parameter len_nij = 64;
+parameter len_nij = 100;
 
 reg clk = 0;
 reg reset = 1;
@@ -58,7 +58,6 @@ reg [8*30:1] w_file_name;
 wire ofifo_valid;
 wire [col*psum_bw-1:0] sfp_out;
 
-wire L0_full;
 
 integer x_file, x_scan_file ; // file_handler
 integer w_file, w_scan_file ; // file_handler
@@ -90,8 +89,7 @@ core  #(.bw(bw), .col(col), .row(row)) core_instance (
 	  .ofifo_valid(ofifo_valid),
     .D_xmem(D_xmem_q), 
     .sfp_out(sfp_out), 
-	  .reset(reset),
-    .L0_full(L0_full)
+	  .reset(reset)
   ); 
 
 
@@ -256,7 +254,7 @@ initial begin
     A_xmem = 11'd00000000000; 
 
     // Write to fifo and execute
-    for(t = 0; t < 64; t = t + 1) begin
+    for(t = 0; t < len_nij; t = t + 1) begin
       #0.5 clk = 1'b0; WEN_xmem = 1; CEN_xmem = 0;  WEN_pmem = 0; CEN_pmem = 0;
       if(t < len_nij) begin
         l0_wr = 1'b1;
