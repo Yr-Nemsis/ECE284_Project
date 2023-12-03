@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+`timescale 1ns/1ps
 module sram_128b_w2048 (CLK, D, Q, CEN, WEN, A);
 
   parameter bw = 128;

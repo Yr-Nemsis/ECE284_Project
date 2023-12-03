@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+`timescale 1ns/1ps
 module mac_array (clk, reset, out_s, in_w, in_n, inst_w, valid);
 
   parameter bw = 4;

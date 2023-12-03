@@ -32,7 +32,7 @@ reg CEN_pmem_q = 1;
 reg WEN_pmem_q = 1;
 reg [10:0] A_pmem_q = 0;
 reg ofifo_rd_q = 0;
-reg ififo_wr_q = 0;
+reg relu_q = 0;
 reg ififo_rd_q = 0;
 reg l0_rd_q = 0;
 reg l0_wr_q = 0;
@@ -47,7 +47,7 @@ reg [psum_bw*col-1:0] answer;
 
 
 reg ofifo_rd;
-reg ififo_wr;
+reg relu;
 reg ififo_rd;
 reg l0_rd;
 reg l0_wr;
@@ -75,7 +75,7 @@ assign inst_q[19]   = CEN_xmem_q;
 assign inst_q[18]   = WEN_xmem_q;
 assign inst_q[17:7] = A_xmem_q;
 assign inst_q[6]   = ofifo_rd_q;
-assign inst_q[5]   = ififo_wr_q;
+assign inst_q[5]   = relu_q;
 assign inst_q[4]   = ififo_rd_q;
 assign inst_q[3]   = l0_rd_q;
 assign inst_q[2]   = l0_wr_q;
@@ -101,7 +101,7 @@ initial begin
   WEN_xmem = 1;
   A_xmem   = 0;
   ofifo_rd = 0;
-  ififo_wr = 0;
+  relu = 0;
   ififo_rd = 0;
   l0_rd    = 0;
   l0_wr    = 0;
@@ -385,7 +385,7 @@ always @ (posedge clk) begin
    A_xmem_q   <= A_xmem;
    ofifo_rd_q <= ofifo_rd;
    acc_q      <= acc;
-   ififo_wr_q <= ififo_wr;
+   relu_q     <= relu;
    ififo_rd_q <= ififo_rd;
    l0_rd_q    <= l0_rd;
    l0_wr_q    <= l0_wr ;

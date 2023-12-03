@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+`timescale 1ns/1ps
 module fifo_mux_2_1(in0, in1, sel, out);
 
   parameter bw = 8;

@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
 
   parameter bw = 4;

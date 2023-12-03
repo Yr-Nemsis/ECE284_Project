@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+`timescale 1ns/1ps
 module ofifo (clk, in, out, wr, rd, o_full, reset, o_ready, o_valid);
 
   parameter col  = 8;

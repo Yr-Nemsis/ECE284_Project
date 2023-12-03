@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
 
   parameter bw = 4;
@@ -65,7 +66,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     sfp  #(.bw(bw), .psum_bw(psum_bw)) sfp_instance(
       .clk(clk),
       .acc(inst[33]),
-      .relu(),
+      .relu(inst[5]),
       .reset(reset),
       .in(in_sfp[psum_bw*(i+1)-1:psum_bw*i]),
       .thres({(psum_bw){1'b0}}),

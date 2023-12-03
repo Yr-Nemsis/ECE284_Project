@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+`timescale 1ns/1ps
 module fifo_depth16 (rd_clk, wr_clk, in, out, rd, wr, o_full, o_empty, reset);
 
   parameter bw = 4;

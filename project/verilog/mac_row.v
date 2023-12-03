@@ -1,5 +1,6 @@
 // Created by prof. Mingu Kang @VVIP Lab in UCSD ECE department
 // Please do not spread this code without permission 
+`timescale 1ns/1ps
 module mac_row (clk, out_s, in_w, in_n, valid, inst_w, reset);
 
   parameter bw = 4;
