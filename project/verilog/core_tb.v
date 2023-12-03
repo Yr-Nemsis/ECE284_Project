@@ -294,12 +294,13 @@ initial begin
     execute = 1'b0;
     ofifo_rd = 1'b0;
     A_pmem = A_pmem + 1;
+    WEN_pmem = 1; CEN_pmem = 1; 
     #0.5 clk = 1'b1; 
 
 
   end  // end of kij loop
 
-  
+ 
   ////////// Accumulation /////////
   acc_file = $fopen("acc_address.txt", "r");
   out_file = $fopen("out.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
