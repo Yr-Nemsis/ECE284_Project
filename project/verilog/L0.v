@@ -25,7 +25,7 @@ module l0 (clk, in, out, rd, wr, o_full, reset, o_ready);
   assign o_ready =  ~o_full; // all fifos are not full
 
   for (i=0; i<row ; i=i+1) begin : row_num
-    fifo_depth8 #(.bw(bw)) fifo_instance (
+    fifo_depth16 #(.bw(bw)) fifo_instance (
       .rd_clk(clk),
       .wr_clk(clk),
       .rd(rd_en[i]),

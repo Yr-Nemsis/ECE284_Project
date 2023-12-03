@@ -18,7 +18,7 @@ module ofifo (clk, in, out, wr, rd, o_full, reset, o_ready, o_valid);
   wire [col-1:0] empty;
   wire [col-1:0] full;
   
-  //reg rd_en;
+  reg rd_en;
   reg  [col-1:0] wr_en;
   
   genvar i;
@@ -30,13 +30,13 @@ module ofifo (clk, in, out, wr, rd, o_full, reset, o_ready, o_valid);
 
   assign o_ready = (|fifo_full)? 1'b0: 1'b1; // when all fifo's are not full
   assign o_full  = ~o_ready ; // When any fifo is full 
-  assign o_valid = fifo_full[0] ; // when i have a vector to output (fifo0 is full)
+  assign o_valid = ~(|fifo_empty) ; // when i have a vector to output (all fifos are not empty)
 
   for (i=0; i<col ; i=i+1) begin : col_num
-      fifo_depth8 #(.bw(psum_bw)) fifo_instance (
+      fifo_depth16 #(.bw(psum_bw)) fifo_instance (
 	      .rd_clk(clk),
 	      .wr_clk(clk),
-	      .rd(o_valid || rd),
+	      .rd(rd_en),
 	      .wr(wr_en[i]),
         .o_empty(fifo_empty[i]),
         .o_full(fifo_full[i]),
@@ -51,10 +51,12 @@ module ofifo (clk, in, out, wr, rd, o_full, reset, o_ready, o_valid);
     if (reset) 
     begin
       wr_en <= 0;
+      rd_en <= 0;
     end
     else
     begin
       wr_en <= wr;
+      rd_en <= rd;
     end
   end
 
