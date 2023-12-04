@@ -10,7 +10,7 @@ parameter len_kij = 9;
 parameter len_onij = 8;
 parameter col = 8;
 parameter row = 8;
-parameter len_nij = 64;
+parameter len_nij = 100;
 
 reg clk = 0;
 reg reset = 1;
@@ -335,7 +335,7 @@ initial begin
     WEN_pmem = 1; CEN_pmem = 1; 
     #0.5 clk = 1'b1; 
 
-    $finish();
+    // $finish();
   end  // end of kij loop
 
  
@@ -346,9 +346,9 @@ initial begin
                                       /// pytorch automatically
 
   // Following three lines are to remove the first three comment lines of the file
-  out_scan_file = $fscanf(out_file,"%s", answer); 
-  out_scan_file = $fscanf(out_file,"%s", answer); 
-  out_scan_file = $fscanf(out_file,"%s", answer); 
+  // out_scan_file = $fscanf(out_file,"%s", answer); 
+  // out_scan_file = $fscanf(out_file,"%s", answer); 
+  // out_scan_file = $fscanf(out_file,"%s", answer); 
 
   error = 0;
 
@@ -358,7 +358,9 @@ initial begin
 
   for (i=0; i<len_onij+1; i=i+1) begin 
 
-    #0.5 clk = 1'b0; 
+    #0.5 clk = 1'b0; relu=0;
+    #0.5 clk = 1'b1; 
+    #0.5 clk = 1'b0; relu=0;
     #0.5 clk = 1'b1; 
 
     if (i>0) begin
@@ -367,13 +369,13 @@ initial begin
          $display("%2d-th output featuremap Data matched! :D", i); 
        else begin
          $display("%2d-th output featuremap Data ERROR!!", i); 
-         $display("sfpout: %128b", sfp_out);
-         $display("answer: %128b", answer);
+         $display("sfpout: %h", sfp_out);
+         $display("answer: %h", answer);
          error = 1;
        end
     end
    
- 
+
     #0.5 clk = 1'b0; reset = 1;
     #0.5 clk = 1'b1;  
     #0.5 clk = 1'b0; reset = 0; 
@@ -390,6 +392,8 @@ initial begin
     end
 
     #0.5 clk = 1'b0; acc = 0;
+    #0.5 clk = 1'b1; 
+    #0.5 clk = 1'b0; relu = 1;
     #0.5 clk = 1'b1; 
   end
 

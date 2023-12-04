@@ -29,7 +29,7 @@ always @(posedge clk) begin
             psum_q <= psum_q + in;
         end
         else if(relu) begin
-            if(psum_q < thres) begin
+            if($signed(psum_q) < $signed(thres)) begin
                 psum_q <= 0;
             end
         end
