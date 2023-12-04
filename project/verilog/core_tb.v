@@ -298,7 +298,7 @@ initial begin
         //$display("%128b",psum_check);
         //$display("%32b", core_instance.psum_sram.D);
         if(psum_check != core_instance.psum_sram.D) begin
-          $display("ERROR at t = %d, kij = %d", t, kij);
+          $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
         end
       end
 
@@ -322,7 +322,7 @@ initial begin
         //$display("%128b",psum_check);
         //$display("%32b", core_instance.psum_sram.D);
         if(psum_check != core_instance.psum_sram.D) begin
-          $display("ERROR at t = %d, kij = %d", t, kij);
+          $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
         end
       end
       #0.5 clk = 1'b1; 
