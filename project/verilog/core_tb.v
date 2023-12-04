@@ -7,7 +7,7 @@ module core_tb;
 parameter bw = 4;
 parameter psum_bw = 16;
 parameter len_kij = 9;
-parameter len_onij = 8;
+parameter len_onij = 64;
 parameter col = 8;
 parameter row = 8;
 parameter len_nij = 100;
