@@ -67,6 +67,11 @@ integer captured_data;
 integer t, i, j, k, kij;
 integer error;
 
+integer psum_file, psum_scan_file;
+reg [psum_bw*col-1:0] psum_check;
+integer psum_chk_kij = 8;
+reg [8*30:1] psum_file_name;
+
 assign inst_q[33] = acc_q;
 assign inst_q[32] = CEN_pmem_q;
 assign inst_q[31] = WEN_pmem_q;
@@ -251,7 +256,24 @@ initial begin
     
     /////// Activation data writing to L0 and all other steps ///////
     //A_xmem = 11'd11;
-    A_xmem = 11'd00000000000; 
+    A_xmem = 11'd00000000000;
+
+    case(kij)
+      0: psum_file_name = "psum_kij0.txt";
+      1: psum_file_name = "psum_kij1.txt";
+      2: psum_file_name = "psum_kij2.txt";
+      3: psum_file_name = "psum_kij3.txt";
+      4: psum_file_name = "psum_kij4.txt";
+      5: psum_file_name = "psum_kij5.txt";
+      6: psum_file_name = "psum_kij6.txt";
+      7: psum_file_name = "psum_kij7.txt";
+      8: psum_file_name = "psum_kij8.txt";
+    endcase
+    psum_file = $fopen(psum_file_name, "r");
+    psum_scan_file = $fscanf(psum_file,"%s", captured_data);
+    psum_scan_file = $fscanf(psum_file,"%s", captured_data);
+    psum_scan_file = $fscanf(psum_file,"%s", captured_data);
+
 
     // Write to fifo and execute
     for(t = 0; t < len_nij; t = t + 1) begin
@@ -270,13 +292,23 @@ initial begin
       if(t > 16) begin
         ofifo_rd = 1'b1;
       end
+
+      if(t > 18) begin
+        psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
+        //$display("%128b",psum_check);
+        //$display("%32b", core_instance.psum_sram.D);
+        if(psum_check != core_instance.psum_sram.D) begin
+          $display("ERROR at t = %d, kij = %d", t, kij);
+        end
+      end
+
       if(t > 18) begin
         A_pmem = A_pmem + 1;
       end
 
       #0.5 clk = 1'b1; 
     end
-
+    
     // Finish execution
    for(t = 0; t < 18; t = t + 1) begin
       #0.5 clk = 1'b0;
@@ -285,6 +317,14 @@ initial begin
       execute = 1'b1;
       ofifo_rd = 1'b1;
       A_pmem = A_pmem + 1;
+      if(kij == psum_chk_kij) begin
+        psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
+        //$display("%128b",psum_check);
+        //$display("%32b", core_instance.psum_sram.D);
+        if(psum_check != core_instance.psum_sram.D) begin
+          $display("ERROR at t = %d, kij = %d", t, kij);
+        end
+      end
       #0.5 clk = 1'b1; 
     end
 
