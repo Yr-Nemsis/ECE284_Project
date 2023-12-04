@@ -10,7 +10,7 @@ parameter len_kij = 9;
 parameter len_onij = 8;
 parameter col = 8;
 parameter row = 8;
-parameter len_nij = 100;
+parameter len_nij = 64;
 
 reg clk = 0;
 reg reset = 1;
@@ -294,11 +294,11 @@ initial begin
       end
 
       if(t > 18) begin
-        psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
-        //$display("%128b",psum_check);
-        //$display("%32b", core_instance.psum_sram.D);
-        if(psum_check != core_instance.psum_sram.D) begin
+      psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
+       if(psum_check != core_instance.psum_sram.D) begin
           $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
+          $display("Expected: %h", psum_check);
+          $display("Recieved: %h", core_instance.psum_sram.D); 
         end
       end
 
@@ -317,13 +317,11 @@ initial begin
       execute = 1'b1;
       ofifo_rd = 1'b1;
       A_pmem = A_pmem + 1;
-      if(kij == psum_chk_kij) begin
-        psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
-        //$display("%128b",psum_check);
-        //$display("%32b", core_instance.psum_sram.D);
-        if(psum_check != core_instance.psum_sram.D) begin
-          $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
-        end
+      psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
+      if(psum_check != core_instance.psum_sram.D) begin
+        $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
+        $display("Expected: %h", psum_check);
+        $display("Recieved: %h", core_instance.psum_sram.D); 
       end
       #0.5 clk = 1'b1; 
     end
@@ -337,7 +335,7 @@ initial begin
     WEN_pmem = 1; CEN_pmem = 1; 
     #0.5 clk = 1'b1; 
 
-
+    $finish();
   end  // end of kij loop
 
  
