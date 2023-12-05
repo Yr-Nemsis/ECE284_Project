@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
+module core(clk, inst, D_xmem, sfp_out, reset);
 
   parameter bw = 4;
   parameter psum_bw = 16;
@@ -9,7 +9,6 @@ module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
 
   input clk, reset;
   input [33:0] inst;
-  output ofifo_valid;
   input [bw*row-1:0] D_xmem;
   output [col*psum_bw-1:0] sfp_out;
 
@@ -26,8 +25,7 @@ module core(clk, inst, ofifo_valid, D_xmem, sfp_out, reset);
     .in_sfp(sfp_in),
     .out_mac(ofifo_out),
     .out_sfp(sfp_out),
-    .inst(inst),
-    .ofifo_valid(ofifo_valid)
+    .inst(inst)
   );
 
 

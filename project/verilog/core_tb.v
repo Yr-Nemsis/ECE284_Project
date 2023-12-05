@@ -55,7 +55,6 @@ reg execute;
 reg load;
 reg [8*30:1] stringvar;
 reg [8*30:1] w_file_name;
-wire ofifo_valid;
 wire [col*psum_bw-1:0] sfp_out;
 
 
@@ -88,13 +87,18 @@ assign inst_q[1]   = execute_q;
 assign inst_q[0]   = load_q; 
 
 
-core  #(.bw(bw), .col(col), .row(row)) core_instance (
-	  .clk(clk), 
-	  .inst(inst_q),
-	  .ofifo_valid(ofifo_valid),
-    .D_xmem(D_xmem_q), 
-    .sfp_out(sfp_out), 
-	  .reset(reset)
+  chip #(.bw(bw), .col(col), .row(row)) chip_instance (
+	  .clk1(clk), 
+	  .inst1(inst_q),
+    .mem1(D_xmem_q), 
+    .sfp_out1(sfp_out), 
+	  .reset1(reset),
+
+    .clk2(clk), 
+	  .inst2(inst_q),
+    .mem2(D_xmem_q), 
+    .sfp_out2(sfp_out), 
+	  .reset2(reset)
   ); 
 
 

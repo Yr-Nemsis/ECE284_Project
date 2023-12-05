@@ -1,5 +1,5 @@
 `timescale 1ns/1ps
-module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
+module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst);
 
   parameter bw = 4;
   parameter psum_bw = 16;
@@ -13,7 +13,6 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
   
   
   output [psum_bw*col-1:0] out_mac;
-  output ofifo_valid;
 
   input [col*psum_bw-1:0] in_sfp;
   output [col*psum_bw-1:0] out_sfp;
@@ -57,7 +56,7 @@ module corelet(clk, reset, in_mac, in_sfp, out_mac, out_sfp, inst, ofifo_valid);
     .out(out_mac),
     .o_ready(),
     .o_full(),
-    .o_valid(ofifo_valid)
+    .o_valid()
   );
 
   genvar i;
