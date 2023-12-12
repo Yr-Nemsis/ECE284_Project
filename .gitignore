@@ -1,1 +1,5 @@
 .DS_Store
+compiled
+core_tb.vcd
+/fpga mapping
+/huffman_mapping
