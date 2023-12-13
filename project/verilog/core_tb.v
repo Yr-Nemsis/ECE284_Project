@@ -344,7 +344,6 @@ initial begin
     /////////////////////////////////////
 
     
-    
     /////// Activation data writing to L0 and all other steps ///////
     //A_xmem = 11'd11;
     A_xmem = 11'd00000000000;
@@ -389,8 +388,8 @@ initial begin
       psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
        if(psum_check != core_instance.psum_sram.D) begin
           $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
-          $display("Expected: %h", psum_check);
-          $display("Recieved: %h", core_instance.psum_sram.D); 
+          $display("Expected: %128b", psum_check);
+          $display("Recieved: %128b", core_instance.psum_sram.D); 
         end
       end
 
@@ -418,6 +417,7 @@ initial begin
       #0.5 clk = 1'b1; 
     end
 
+
     #0.5 clk = 1'b0;
     l0_wr = 1'b0;
     l0_rd = 1'b0;
@@ -425,6 +425,16 @@ initial begin
     ofifo_rd = 1'b0;
     A_pmem = A_pmem + 1;
     WEN_pmem = 1; CEN_pmem = 1; 
+    #0.5 clk = 1'b1; 
+
+
+    for(t = 0; t < 3; t = t + 1) begin
+      #0.5 clk = 1'b0;
+      ofifo_rd = 1'b1;
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    ofifo_rd = 1'b0;
     #0.5 clk = 1'b1; 
 
     // $finish();
