@@ -195,7 +195,7 @@ initial begin
   $dumpfile("core_tb.vcd");
   $dumpvars(0,core_tb);
 
-  x_file = $fopen("activation_tile0.txt", "r");
+  x_file = $fopen("activation_dual.txt", "r");
   // Following three lines are to remove the first three comment lines of the file
   x_scan_file = $fscanf(x_file,"%s", captured_data);
   x_scan_file = $fscanf(x_file,"%s", captured_data);
@@ -233,15 +233,15 @@ initial begin
   for (kij=0; kij<9; kij=kij+1) begin  // kij loop
 
     case(kij)
-     0: w_file_name = "weight_itile0_otile0_kij0.txt";
-     1: w_file_name = "weight_itile0_otile0_kij1.txt";
-     2: w_file_name = "weight_itile0_otile0_kij2.txt";
-     3: w_file_name = "weight_itile0_otile0_kij3.txt";
-     4: w_file_name = "weight_itile0_otile0_kij4.txt";
-     5: w_file_name = "weight_itile0_otile0_kij5.txt";
-     6: w_file_name = "weight_itile0_otile0_kij6.txt";
-     7: w_file_name = "weight_itile0_otile0_kij7.txt";
-     8: w_file_name = "weight_itile0_otile0_kij8.txt";
+     0: w_file_name = "weight_dual1_kij0.txt";
+     1: w_file_name = "weight_dual1_kij1.txt";
+     2: w_file_name = "weight_dual1_kij2.txt";
+     3: w_file_name = "weight_dual1_kij3.txt";
+     4: w_file_name = "weight_dual1_kij4.txt";
+     5: w_file_name = "weight_dual1_kij5.txt";
+     6: w_file_name = "weight_dual1_kij6.txt";
+     7: w_file_name = "weight_dual1_kij7.txt";
+     8: w_file_name = "weight_dual1_kij8.txt";
     endcase
     
 
@@ -337,15 +337,15 @@ initial begin
     A_xmem = 11'd00000000000;
 
     case(kij)
-      0: psum_file_name = "psum_kij0.txt";
-      1: psum_file_name = "psum_kij1.txt";
-      2: psum_file_name = "psum_kij2.txt";
-      3: psum_file_name = "psum_kij3.txt";
-      4: psum_file_name = "psum_kij4.txt";
-      5: psum_file_name = "psum_kij5.txt";
-      6: psum_file_name = "psum_kij6.txt";
-      7: psum_file_name = "psum_kij7.txt";
-      8: psum_file_name = "psum_kij8.txt";
+      0: psum_file_name = "psum_dual1_kij0.txt";
+      1: psum_file_name = "psum_dual1_kij1.txt";
+      2: psum_file_name = "psum_dual1_kij2.txt";
+      3: psum_file_name = "psum_dual1_kij3.txt";
+      4: psum_file_name = "psum_dual1_kij4.txt";
+      5: psum_file_name = "psum_dual1_kij5.txt";
+      6: psum_file_name = "psum_dual1_kij6.txt";
+      7: psum_file_name = "psum_dual1_kij7.txt";
+      8: psum_file_name = "psum_dual1_kij8.txt";
     endcase
     psum_file = $fopen(psum_file_name, "r");
     psum_scan_file = $fscanf(psum_file,"%s", captured_data);
@@ -374,9 +374,9 @@ initial begin
       if(t > 18) begin
       psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
        if(psum_check != chip_instance.core_instance0.psum_sram.D) begin
-          $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
-          $display("Expected: %h", psum_check);
-          $display("Recieved: %h", chip_instance.core_instance0.psum_sram.D); 
+          $display("ERROR: psum mismatch in core 0 at t = %d, kij = %d", t, kij);
+          $display("Expected: %128b", psum_check);
+          $display("Recieved: %128b", chip_instance.core_instance0.psum_sram.D); 
         end
       end
 
@@ -397,9 +397,9 @@ initial begin
       A_pmem = A_pmem + 1;
       psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
       if(psum_check != chip_instance.core_instance0.psum_sram.D) begin
-        $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
-        $display("Expected: %h", psum_check);
-        $display("Recieved: %h", chip_instance.core_instance0.psum_sram.D); 
+        $display("ERROR: psum mismatch in core 0 at t = %d, kij = %d", t, kij);
+        $display("Expected: %128b", psum_check);
+        $display("Recieved: %128b", chip_instance.core_instance0.psum_sram.D); 
       end
       #0.5 clk = 1'b1; 
     end
@@ -413,13 +413,24 @@ initial begin
     WEN_pmem = 1; CEN_pmem = 1; 
     #0.5 clk = 1'b1; 
 
+
+
+    for(t = 0; t < 3; t = t + 1) begin
+      #0.5 clk = 1'b0;
+      ofifo_rd = 1'b1;
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    ofifo_rd = 1'b0;
+    #0.5 clk = 1'b1; 
+
     // $finish();
   end  // end of kij loop
 
  
   ////////// Accumulation /////////
-  acc_file = $fopen("acc_address.txt", "r");
-  out_file = $fopen("out.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
+  acc_file = $fopen("acc_dual_address.txt", "r");
+  out_file = $fopen("out_dual1.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
                                       /// This can be generated manually or in
                                       /// pytorch automatically
 
@@ -515,7 +526,7 @@ initial begin
   // $dumpfile("core_tb.vcd");
   // $dumpvars(0,core_tb);
 
-  x_file1 = $fopen("activation_tile0.txt", "r");
+  x_file1 = $fopen("activation_dual.txt", "r");
   // Following three lines are to remove the first three comment lines of the file
   x_scan_file1 = $fscanf(x_file1,"%s", captured_data1);
   x_scan_file1 = $fscanf(x_file1,"%s", captured_data1);
@@ -553,15 +564,15 @@ initial begin
   for (kij1=0; kij1<9; kij1=kij1+1) begin  // kij loop
 
     case(kij1)
-     0: w_file_name1 = "weight_itile0_otile0_kij0.txt";
-     1: w_file_name1 = "weight_itile0_otile0_kij1.txt";
-     2: w_file_name1 = "weight_itile0_otile0_kij2.txt";
-     3: w_file_name1 = "weight_itile0_otile0_kij3.txt";
-     4: w_file_name1 = "weight_itile0_otile0_kij4.txt";
-     5: w_file_name1 = "weight_itile0_otile0_kij5.txt";
-     6: w_file_name1 = "weight_itile0_otile0_kij6.txt";
-     7: w_file_name1 = "weight_itile0_otile0_kij7.txt";
-     8: w_file_name1 = "weight_itile0_otile0_kij8.txt";
+     0: w_file_name1 = "weight_dual2_kij0.txt";
+     1: w_file_name1 = "weight_dual2_kij1.txt";
+     2: w_file_name1 = "weight_dual2_kij2.txt";
+     3: w_file_name1 = "weight_dual2_kij3.txt";
+     4: w_file_name1 = "weight_dual2_kij4.txt";
+     5: w_file_name1 = "weight_dual2_kij5.txt";
+     6: w_file_name1 = "weight_dual2_kij6.txt";
+     7: w_file_name1 = "weight_dual2_kij7.txt";
+     8: w_file_name1 = "weight_dual2_kij8.txt";
     endcase
     
 
@@ -657,15 +668,15 @@ initial begin
     A_xmem1 = 11'd00000000000;
 
     case(kij1)
-      0: psum_file_name1 = "psum_kij0.txt";
-      1: psum_file_name1 = "psum_kij1.txt";
-      2: psum_file_name1 = "psum_kij2.txt";
-      3: psum_file_name1 = "psum_kij3.txt";
-      4: psum_file_name1 = "psum_kij4.txt";
-      5: psum_file_name1 = "psum_kij5.txt";
-      6: psum_file_name1 = "psum_kij6.txt";
-      7: psum_file_name1 = "psum_kij7.txt";
-      8: psum_file_name1 = "psum_kij8.txt";
+      0: psum_file_name1 = "psum_dual2_kij0.txt";
+      1: psum_file_name1 = "psum_dual2_kij1.txt";
+      2: psum_file_name1 = "psum_dual2_kij2.txt";
+      3: psum_file_name1 = "psum_dual2_kij3.txt";
+      4: psum_file_name1 = "psum_dual2_kij4.txt";
+      5: psum_file_name1 = "psum_dual2_kij5.txt";
+      6: psum_file_name1 = "psum_dual2_kij6.txt";
+      7: psum_file_name1 = "psum_dual2_kij7.txt";
+      8: psum_file_name1 = "psum_dual2_kij8.txt";
     endcase
     psum_file1 = $fopen(psum_file_name1, "r");
     psum_scan_file1 = $fscanf(psum_file1,"%s", captured_data1);
@@ -694,9 +705,9 @@ initial begin
       if(t1 > 18) begin
       psum_scan_file1 = $fscanf(psum_file1,"%128b", psum_check1);
        if(psum_check1 != chip_instance.core_instance1.psum_sram.D) begin
-          $display("ERROR: psum mismatch at t = %d, kij = %d", t1, kij1);
-          $display("Expected: %h", psum_check1);
-          $display("Recieved: %h", chip_instance.core_instance1.psum_sram.D); 
+          $display("ERROR: psum mismatch in core 1 at t = %d, kij = %d", t1, kij1);
+          $display("Expected: %128b", psum_check1);
+          $display("Recieved: %128b", chip_instance.core_instance1.psum_sram.D); 
         end
       end
 
@@ -717,9 +728,9 @@ initial begin
       A_pmem1 = A_pmem1 + 1;
       psum_scan_file1 = $fscanf(psum_file1,"%128b", psum_check1);
       if(psum_check1 != chip_instance.core_instance1.psum_sram.D) begin
-        $display("ERROR: psum mismatch at t = %d, kij = %d", t1, kij1);
-        $display("Expected: %h", psum_check1);
-        $display("Recieved: %h", chip_instance.core_instance1.psum_sram.D); 
+        $display("ERROR: psum mismatch in core 1 at t = %d, kij = %d", t1, kij1);
+        $display("Expected: %128b", psum_check1);
+        $display("Recieved: %128b", chip_instance.core_instance1.psum_sram.D); 
       end
       #0.5 clk1 = 1'b1; 
     end
@@ -733,13 +744,23 @@ initial begin
     WEN_pmem1 = 1; CEN_pmem1= 1; 
     #0.5 clk1 = 1'b1; 
 
+
+
+    for(t = 0; t < 3; t = t + 1) begin
+      #0.5 clk = 1'b0;
+      ofifo_rd = 1'b1;
+      #0.5 clk = 1'b1;
+    end
+    #0.5 clk = 1'b0;
+    ofifo_rd = 1'b0;
+    #0.5 clk = 1'b1; 
     // $finish();
   end  // end of kij loop
 
  
   ////////// Accumulation /////////
-  acc_file1 = $fopen("acc_address.txt", "r");
-  out_file1 = $fopen("out.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
+  acc_file1 = $fopen("acc_dual_address.txt", "r");
+  out_file1 = $fopen("out_dual2.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
                                       /// This can be generated manually or in
                                       /// pytorch automatically
 
