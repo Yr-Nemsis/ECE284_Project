@@ -18,6 +18,7 @@ module l0 (clk, in, out, rd, wr, o_full, reset, o_ready);
   wire [row-1:0] empty;
   wire [row-1:0] full;
   reg [row-1:0] rd_en;
+  reg [row-1:0] rd_temp;
   
   genvar i;
   integer ii;
@@ -26,7 +27,7 @@ module l0 (clk, in, out, rd, wr, o_full, reset, o_ready);
   assign o_ready =  ~o_full; // all fifos are not full
 
   for (i=0; i<row ; i=i+1) begin : row_num
-    fifo_depth16 #(.bw(bw)) fifo_instance (
+    fifo_depth64 #(.bw(bw)) fifo_instance (
       .rd_clk(clk),
       .wr_clk(clk),
       .rd(rd_en[i]),
@@ -43,6 +44,7 @@ module l0 (clk, in, out, rd, wr, o_full, reset, o_ready);
   always @ (posedge clk) begin
    if (reset) begin
       rd_en <= 8'b00000000;
+      rd_temp <= 8'b00000000;
    end
    else
 
@@ -59,7 +61,8 @@ module l0 (clk, in, out, rd, wr, o_full, reset, o_ready);
       rd_en[0] <= rd;
       for(ii = 1; ii < row; ii = ii+1)
       begin
-        rd_en[ii] <= rd_en[ii-1];
+        rd_temp[ii]   <= rd_en[ii-1];
+        rd_en[ii] <= rd_temp[ii];
       end 
       ///////////////////////////////////////////////////////
     end

@@ -7,7 +7,7 @@ irun:
 	vvp compiled
 
 wave:
-	gtkwave core_tb.vcd
+	gtkwave core_tb.vcd &
 
 clean:
 	rm -rf compiled *.vcd

@@ -17,6 +17,7 @@ module mac_array (clk, reset, out_s, in_w, in_n, inst_w, valid);
 
 
   reg    [2*row-1:0] inst_w_temp;
+  reg    [2*row-1:0] inst_temp;
   wire   [psum_bw*col*(row+1)-1:0] temp;
   wire   [row*col-1:0] valid_temp;
 
@@ -44,13 +45,20 @@ module mac_array (clk, reset, out_s, in_w, in_n, inst_w, valid);
 
     //valid <= valid_temp[row*col-1:row*col-8];
     inst_w_temp[1:0]   <= inst_w; 
-    inst_w_temp[3:2]   <= inst_w_temp[1:0]; 
-    inst_w_temp[5:4]   <= inst_w_temp[3:2]; 
-    inst_w_temp[7:6]   <= inst_w_temp[5:4]; 
-    inst_w_temp[9:8]   <= inst_w_temp[7:6]; 
-    inst_w_temp[11:10] <= inst_w_temp[9:8]; 
-    inst_w_temp[13:12] <= inst_w_temp[11:10]; 
-    inst_w_temp[15:14] <= inst_w_temp[13:12]; 
+    inst_temp[1:0]     <= inst_w_temp[1:0];
+    inst_w_temp[3:2]   <= inst_temp[1:0]; 
+    inst_temp[3:2]     <= inst_w_temp[3:2];
+    inst_w_temp[5:4]   <= inst_temp[3:2]; 
+    inst_temp[5:4]     <= inst_w_temp[5:4];
+    inst_w_temp[7:6]   <= inst_temp[5:4]; 
+    inst_temp[7:6]     <= inst_w_temp[7:6];
+    inst_w_temp[9:8]   <= inst_temp[7:6]; 
+    inst_temp[9:8]     <= inst_w_temp[9:8];
+    inst_w_temp[11:10] <= inst_temp[9:8]; 
+    inst_temp[11:10]   <= inst_w_temp[11:10];
+    inst_w_temp[13:12] <= inst_temp[11:10]; 
+    inst_temp[13:12]   <= inst_w_temp[13:12];
+    inst_w_temp[15:14] <= inst_temp[13:12]; 
   end
 
 

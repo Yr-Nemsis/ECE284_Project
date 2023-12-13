@@ -15,6 +15,7 @@ module mac_row (clk, out_s, in_w, in_n, valid, inst_w, reset);
   input  [psum_bw*col-1:0] in_n;
 
   wire  [(col+1)*bw-1:0] temp;
+  // reg [col-1:0] valid_temp;
 
   assign temp[bw-1:0]   = in_w;
 
@@ -35,6 +36,12 @@ module mac_row (clk, out_s, in_w, in_n, valid, inst_w, reset);
       .out_s(out_s[psum_bw*i-1:psum_bw*(i-1)])
     );
   end
+
+  // always @ (posedge clk) begin
+  //   for(i = 1; i < col+1; i=i+1) begin : valid_ff
+  //      valid[i-1] <= valid_temp[i-1];
+  //   end
+  // end
 
 
   for(i = 1; i < col+1; i=i+1) begin : valid_gen

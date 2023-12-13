@@ -10,7 +10,7 @@ parameter len_kij = 9;
 parameter len_onij = 64;
 parameter col = 8;
 parameter row = 8;
-parameter len_nij = 200;
+parameter len_nij = 100;
 
 reg clk = 0;
 reg reset = 1;
@@ -141,7 +141,7 @@ initial begin
 
   /////// Activation data writing to memory ///////
 
-  for (t=0; t<len_nij; t=t+1) begin  
+  for (t=0; t<len_nij*2; t=t+1) begin  
     #0.5 clk = 1'b0;  x_scan_file = $fscanf(x_file,"%32b", D_xmem); WEN_xmem = 0; CEN_xmem = 0; if (t>0) A_xmem = A_xmem + 1;
     #0.5 clk = 1'b1;   
   end
@@ -196,11 +196,11 @@ initial begin
 
     A_xmem = 11'b10000000000;
 
-    for (t=0; t<col; t=t+1) begin  
+    for (t=0; t<col*2; t=t+1) begin  
       #0.5 clk = 1'b0;  w_scan_file = $fscanf(w_file,"%32b", D_xmem); WEN_xmem = 0; CEN_xmem = 0; if (t>0) A_xmem = A_xmem + 1; 
       #0.5 clk = 1'b1;  
     end
-
+    
     #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
     #0.5 clk = 1'b1; 
     /////////////////////////////////////
@@ -211,7 +211,7 @@ initial begin
     /////// Kernel data writing to L0 ///////
     A_xmem = 11'b10000000000;
     
-    for (t=0; t<col; t=t+1) begin  
+    for (t=0; t<col*2; t=t+1) begin  
       #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
       if (t>0) begin
         A_xmem = A_xmem + 1;
@@ -222,55 +222,8 @@ initial begin
       #0.5 clk = 1'b1;  
     end
     
-    // Finish writing data to L0 needs 8 more cycles
-    for(t = 0; t < 8; t = t + 1) begin
-      #0.5 clk = 1'b0; 
-      if(t>0) begin
-        l0_wr = 1'b0;
-      end
-      #0.5 clk = 1'b1; 
-    end
-
-    /////////////////////////////////////
-
-
-    
-    ////// provide some intermission to clear up the kernel loading and clean up l0///
-    #0.5 clk = 1'b0;  load = 0; l0_rd =  1'b1;
-    #0.5 clk = 1'b1;  
-
-    // turn off l0 reading
-    l0_rd = 1'b0;
-    for (i=0; i < 7 ; i=i+1) begin
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;  
-    end
-     
-    ////// Load the second set of weights into each PE ///
-    A_xmem = 11'b10000000000;
-
-    for (t=0; t<col; t=t+1) begin  
-      #0.5 clk = 1'b0;  w_scan_file = $fscanf(w_file,"%32b", D_xmem); WEN_xmem = 0; CEN_xmem = 0; if (t>0) A_xmem = A_xmem + 1; 
-      #0.5 clk = 1'b1;  
-    end
-
-    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
-    #0.5 clk = 1'b1;
-
-    A_xmem = 11'b10000000000;
-    for (t=0; t<col; t=t+1) begin  
-      #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
-      if (t>0) begin
-        A_xmem = A_xmem + 1;
-        l0_wr = 1'b1;
-        l0_rd = 1'b1;
-        load = 1'b1;
-      end
-      #0.5 clk = 1'b1;  
-    end
-    
-    // Finish writing data to L0 needs 8 more cycles
-    for(t = 0; t < 8; t = t + 1) begin
+    // Finish writing data to L0 needs 16 more cycles
+    for(t = 0; t < 16; t = t + 1) begin
       #0.5 clk = 1'b0; 
       if(t>0) begin
         l0_wr = 1'b0;
@@ -285,22 +238,21 @@ initial begin
     ////// provide some intermission to clear up the kernel loading and clean up l0///
     #0.5 clk = 1'b0;  load = 0; l0_rd =  1'b1;
     #0.5 clk = 1'b1; 
-    for (i=0; i < 10 ; i=i+1) begin
-      #0.5 clk = 1'b0;
-      #0.5 clk = 1'b1;  
-    end
 
     // turn off l0 reading
     l0_rd = 1'b0;
-    for (i=0; i < 7 ; i=i+1) begin
+    for (i=0; i < 16 ; i=i+1) begin
       #0.5 clk = 1'b0;
       #0.5 clk = 1'b1;  
     end
-    /////////////////////////////////////
+    
+
+
+
 
     
     /////// Activation data writing to L0 and all other steps ///////
-    //A_xmem = 11'd11;
+    // A_xmem = 11'd22;
     A_xmem = 11'd00000000000;
     
     case(kij)
@@ -321,9 +273,9 @@ initial begin
 
 
     // Write to fifo and execute
-    for(t = 0; t < len_nij; t = t + 1) begin
+    for(t = 0; t < len_nij*2; t = t + 1) begin
       #0.5 clk = 1'b0; WEN_xmem = 1; CEN_xmem = 0;  WEN_pmem = 0; CEN_pmem = 0;
-      if(t < len_nij) begin
+      if(t < len_nij*2) begin
         l0_wr = 1'b1;
         A_xmem = A_xmem + 1; 
       end
@@ -334,20 +286,21 @@ initial begin
         l0_rd = 1'b1;
         execute = 1'b1;
       end
-      if(t > 16) begin
+      if(t > 143) begin
         ofifo_rd = 1'b1;
       end
 
-      if(t > 18) begin
+      if(t > 145) begin
       psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
        if(psum_check != core_instance.psum_sram.D) begin
-//          $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
-//          $display("Expected: %h", psum_check);
-//          $display("Recieved: %h", core_instance.psum_sram.D); 
+           $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
+           $display("Expected: %128b", psum_check);
+           $display("Recieved: %128b", core_instance.psum_sram.D); 
         end
+        
       end
 
-      if(t > 18) begin
+      if(t > 145) begin
         A_pmem = A_pmem + 1;
       end
 
@@ -355,7 +308,7 @@ initial begin
     end
     
     // Finish execution
-   for(t = 0; t < 18; t = t + 1) begin
+   for(t = 0; t < 45; t = t + 1) begin
       #0.5 clk = 1'b0;
       l0_wr = 1'b0;
       l0_rd = 1'b1;
@@ -364,9 +317,9 @@ initial begin
       A_pmem = A_pmem + 1;
       psum_scan_file = $fscanf(psum_file,"%128b", psum_check);
       if(psum_check != core_instance.psum_sram.D) begin
-//        $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
-//        $display("Expected: %h", psum_check);
-//        $display("Recieved: %h", core_instance.psum_sram.D); 
+       $display("ERROR: psum mismatch at t = %d, kij = %d", t, kij);
+       $display("Expected: %128b", psum_check);
+       $display("Recieved: %128b", core_instance.psum_sram.D); 
       end
       #0.5 clk = 1'b1; 
     end
@@ -380,6 +333,15 @@ initial begin
     WEN_pmem = 1; CEN_pmem = 1; 
     #0.5 clk = 1'b1; 
 
+    for (t = 0; t<5; t=t+1) begin
+      #0.5 clk = 1'b0;
+      ofifo_rd = 1'b1;
+      #0.5 clk = 1'b1; 
+    end
+
+    #0.5 clk = 1'b0;
+    ofifo_rd = 1'b0;
+    #0.5 clk = 1'b1; 
     // $finish();
   end  // end of kij loop
 
@@ -411,12 +373,12 @@ initial begin
     if (i>0) begin
      out_scan_file = $fscanf(out_file,"%128b", answer); // reading from out file to answer
       if (sfp_out == answer) begin
-//         $display("%2d-th output featuremap Data matched! :D", i); 
+        $display("%2d-th output featuremap Data matched! :D", i); 
        end
        else begin
-//         $display("%2d-th output featuremap Data ERROR!!", i); 
-//         $display("sfpout: %h", sfp_out);
-//         $display("answer: %h", answer);
+        $display("%2d-th output featuremap Data ERROR!!", i); 
+        $display("sfpout: %h", sfp_out);
+        $display("answer: %h", answer);
          error = 1;
        end
     end
@@ -445,8 +407,8 @@ initial begin
 
 
   if (error == 0) begin
-//  	$display("############ No error detected ##############"); 
-//  	$display("########### Project Completed !! ############"); 
+ 	$display("############ No error detected ##############"); 
+ 	$display("########### Project Completed !! ############"); 
 
   end
 
