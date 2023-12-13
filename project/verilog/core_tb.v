@@ -95,7 +95,37 @@ core  #(.bw(bw), .col(col), .row(row)) core_instance (
     .D_xmem(D_xmem_q), 
     .sfp_out(sfp_out), 
 	  .reset(reset)
-  ); 
+); 
+
+reg act_in;
+reg act_start;
+wire act_valid;
+wire [bw*row-1:0] act_out;
+reg act_first = 1'b0;
+
+reg w_in;
+reg w_start;
+wire w_valid;
+wire [bw*row-1:0] w_out;
+reg w_first = 1'b0;
+
+huffman_act act_decoder(
+  .clk(clk),
+  .reset(reset),
+  .in(act_in),
+  .valid_in(act_start),
+  .out(act_out),
+  .valid(act_valid)
+);
+
+huffman_w w_decoder(
+  .clk(clk),
+  .reset(reset),
+  .in(w_in),
+  .valid_in(w_start),
+  .out(w_out),
+  .valid(w_valid)
+);
 
 
 initial begin 
@@ -113,15 +143,18 @@ initial begin
   execute  = 0;
   load     = 0;
 
+  act_in = 0;
+  act_start = 0;
+
+  w_in = 0;
+  w_start = 0;
+
 
   $dumpfile("core_tb.vcd");
   $dumpvars(0,core_tb);
 
-  x_file = $fopen("activation_tile0.txt", "r");
-  // Following three lines are to remove the first three comment lines of the file
-  x_scan_file = $fscanf(x_file,"%s", captured_data);
-  x_scan_file = $fscanf(x_file,"%s", captured_data);
-  x_scan_file = $fscanf(x_file,"%s", captured_data);
+  x_file = $fopen("encoded_activations.txt", "r");
+
 
   //////// Reset /////////
   #0.5 clk = 1'b0;   reset = 1;
@@ -135,48 +168,121 @@ initial begin
   #0.5 clk = 1'b0;   reset = 0;
   #0.5 clk = 1'b1; 
 
-  #0.5 clk = 1'b0;   
+  #0.5 clk = 1'b0; WEN_xmem = 0; CEN_xmem = 0; 
   #0.5 clk = 1'b1;   
   /////////////////////////
 
-  /////// Activation data writing to memory ///////
-  for (t=0; t<len_nij; t=t+1) begin  
-    #0.5 clk = 1'b0;  x_scan_file = $fscanf(x_file,"%32b", D_xmem); WEN_xmem = 0; CEN_xmem = 0; if (t>0) A_xmem = A_xmem + 1;
-    #0.5 clk = 1'b1;   
+
+  A_xmem = 11'b0; 
+  
+  ////// Decode activation and write to memory ///////
+  while (!$feof(x_file)) begin
+
+    x_scan_file = $fscanf(x_file, "%c\n", captured_data);
+    act_start = 1'b1;
+
+    if (captured_data == "1")
+      act_in = 1'b1;
+    else
+      act_in = 1'b0;
+    if (act_valid) begin
+      D_xmem = act_out;
+      if(act_first) begin
+        A_xmem = A_xmem + 1;
+      end
+      else begin
+        act_first = 1'b1;
+      end
+      
+    end
+
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+     
   end
+
+  #0.5 clk = 1'b0;
+  #0.5 clk = 1'b1;
+  if (act_valid) begin
+    D_xmem = act_out;
+    A_xmem = A_xmem + 1; 
+  end
+  #0.5 clk = 1'b0;
+  #0.5 clk = 1'b1;
 
   #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
   #0.5 clk = 1'b1; 
 
   $fclose(x_file);
+
+  
   /////////////////////////////////////////////////
 
-   A_pmem = 11'b00000000000;
-  for (kij=0; kij<9; kij=kij+1) begin  // kij loop
+  /////// Decoding weights and writing to memory /////
+  #0.5 clk = 1'b0;   reset = 1;
+  #0.5 clk = 1'b1; 
 
-    case(kij)
-     0: w_file_name = "weight_itile0_otile0_kij0.txt";
-     1: w_file_name = "weight_itile0_otile0_kij1.txt";
-     2: w_file_name = "weight_itile0_otile0_kij2.txt";
-     3: w_file_name = "weight_itile0_otile0_kij3.txt";
-     4: w_file_name = "weight_itile0_otile0_kij4.txt";
-     5: w_file_name = "weight_itile0_otile0_kij5.txt";
-     6: w_file_name = "weight_itile0_otile0_kij6.txt";
-     7: w_file_name = "weight_itile0_otile0_kij7.txt";
-     8: w_file_name = "weight_itile0_otile0_kij8.txt";
-    endcase
+
+  #0.5 clk = 1'b0;   reset = 0; WEN_xmem = 0; CEN_xmem = 0; 
+  #0.5 clk = 1'b1;
+
+  w_file = $fopen("encoded_weights.txt", "r"); 
+
+  A_xmem = 11'b10000000000;
+
+  w_start = 1'b1;
+  while (!$feof(w_file)) begin
+
+    w_scan_file = $fscanf(w_file, "%c\n", captured_data);
     
 
-    w_file = $fopen(w_file_name, "r");
-    // Following three lines are to remove the first three comment lines of the file
-    w_scan_file = $fscanf(w_file,"%s", captured_data);
-    w_scan_file = $fscanf(w_file,"%s", captured_data);
-    w_scan_file = $fscanf(w_file,"%s", captured_data);
+    if (captured_data == "1")
+      w_in = 1'b1;
+    else
+      w_in = 1'b0;
 
+    if (w_valid) begin
+      D_xmem = w_out;
+      if(w_first) begin
+        A_xmem = A_xmem + 1;
+      end
+      else begin
+        w_first = 1'b1;
+      end
+      
+    end
+
+    #0.5 clk = 1'b0;
+    #0.5 clk = 1'b1;
+     
+  end
+
+  #0.5 clk = 1'b0;
+  #0.5 clk = 1'b1;
+  if (w_valid) begin
+    D_xmem = w_out;
+    A_xmem = A_xmem + 1; 
+  end
+  #0.5 clk = 1'b0;
+  #0.5 clk = 1'b1;
+
+  #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
+  #0.5 clk = 1'b1;
+
+  $fclose(w_file);
+
+  ///////////////////////////////////////////////////
+
+
+  A_pmem = 11'b00000000000;
+
+  for (kij=0; kij<9; kij=kij+1) begin  // kij loop
+
+  //////////////////// reset ////////////
     #0.5 clk = 1'b0;   reset = 1;
     #0.5 clk = 1'b1; 
 
-    for (i=0; i<10 ; i=i+1) begin
+    for (i=0; i<5 ; i=i+1) begin
       #0.5 clk = 1'b0;
       #0.5 clk = 1'b1;  
     end
@@ -188,28 +294,12 @@ initial begin
     #0.5 clk = 1'b1;   
 
 
-
-
-
-    /////// Kernel data writing to memory ///////
-
-    A_xmem = 11'b10000000000;
-
-    for (t=0; t<col; t=t+1) begin  
-      #0.5 clk = 1'b0;  w_scan_file = $fscanf(w_file,"%32b", D_xmem); WEN_xmem = 0; CEN_xmem = 0; if (t>0) A_xmem = A_xmem + 1; 
-      #0.5 clk = 1'b1;  
-    end
-
-    #0.5 clk = 1'b0;  WEN_xmem = 1;  CEN_xmem = 1; A_xmem = 0;
-    #0.5 clk = 1'b1; 
     /////////////////////////////////////
     
 
-
-
     /////// Kernel data writing to L0 ///////
-    A_xmem = 11'b10000000000;
-    
+    A_xmem = 11'b10000000000 + kij * 8;
+
     for (t=0; t<col; t=t+1) begin  
       #0.5 clk = 1'b0;   WEN_xmem = 1; CEN_xmem = 0;
       if (t>0) begin
@@ -220,6 +310,7 @@ initial begin
       end
       #0.5 clk = 1'b1;  
     end
+
     
     // Finish writing data to L0 needs 8 more cycles
     for(t = 0; t < 8; t = t + 1) begin
@@ -259,16 +350,17 @@ initial begin
     A_xmem = 11'd00000000000;
 
     case(kij)
-      0: psum_file_name = "psum_kij0.txt";
-      1: psum_file_name = "psum_kij1.txt";
-      2: psum_file_name = "psum_kij2.txt";
-      3: psum_file_name = "psum_kij3.txt";
-      4: psum_file_name = "psum_kij4.txt";
-      5: psum_file_name = "psum_kij5.txt";
-      6: psum_file_name = "psum_kij6.txt";
-      7: psum_file_name = "psum_kij7.txt";
-      8: psum_file_name = "psum_kij8.txt";
+      0: psum_file_name = "psum_pruned_kij0.txt";
+      1: psum_file_name = "psum_pruned_kij1.txt";
+      2: psum_file_name = "psum_pruned_kij2.txt";
+      3: psum_file_name = "psum_pruned_kij3.txt";
+      4: psum_file_name = "psum_pruned_kij4.txt";
+      5: psum_file_name = "psum_pruned_kij5.txt";
+      6: psum_file_name = "psum_pruned_kij6.txt";
+      7: psum_file_name = "psum_pruned_kij7.txt";
+      8: psum_file_name = "psum_pruned_kij8.txt";
     endcase
+
     psum_file = $fopen(psum_file_name, "r");
     psum_scan_file = $fscanf(psum_file,"%s", captured_data);
     psum_scan_file = $fscanf(psum_file,"%s", captured_data);
@@ -308,7 +400,7 @@ initial begin
 
       #0.5 clk = 1'b1; 
     end
-    
+
     // Finish execution
    for(t = 0; t < 18; t = t + 1) begin
       #0.5 clk = 1'b0;
@@ -340,8 +432,8 @@ initial begin
 
  
   ////////// Accumulation /////////
-  acc_file = $fopen("acc_address.txt", "r");
-  out_file = $fopen("out.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
+  acc_file = $fopen("acc_address_pruned.txt", "r");
+  out_file = $fopen("out_pruned.txt", "r");  /// out.txt file stores the address sequence to read out from psum memory for accumulation
                                       /// This can be generated manually or in
                                       /// pytorch automatically
 
