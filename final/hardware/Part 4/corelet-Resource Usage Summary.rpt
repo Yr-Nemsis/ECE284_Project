@@ -1,0 +1,90 @@
+Resource Usage Summary report for corelet
+Sat Dec 16 12:44:58 2023
+Quartus Prime Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Fitter Resource Usage Summary
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 2020  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+
+
+
++-----------------------------------------------------------------------+
+; Fitter Resource Usage Summary                                         ;
++---------------------------------------------+-------------------------+
+; Resource                                    ; Usage                   ;
++---------------------------------------------+-------------------------+
+; Total logic elements                        ; 7,144 / 149,760 ( 5 % ) ;
+;     -- Combinational with no register       ; 2790                    ;
+;     -- Register only                        ; 1191                    ;
+;     -- Combinational with a register        ; 3163                    ;
+;                                             ;                         ;
+; Logic element usage by number of LUT inputs ;                         ;
+;     -- 4 input functions                    ; 2635                    ;
+;     -- 3 input functions                    ; 1838                    ;
+;     -- <=2 input functions                  ; 1480                    ;
+;     -- Register only                        ; 1191                    ;
+;                                             ;                         ;
+; Logic elements by mode                      ;                         ;
+;     -- normal mode                          ; 4121                    ;
+;     -- arithmetic mode                      ; 1832                    ;
+;                                             ;                         ;
+; Total registers*                            ; 4,354 / 152,165 ( 3 % ) ;
+;     -- Dedicated logic registers            ; 4,354 / 149,760 ( 3 % ) ;
+;     -- I/O registers                        ; 0 / 2,405 ( 0 % )       ;
+;                                             ;                         ;
+; Total LABs:  partially or completely used   ; 602 / 9,360 ( 6 % )     ;
+; Virtual pins                                ; 0                       ;
+; I/O pins                                    ; 453 / 508 ( 89 % )      ;
+;     -- Clock pins                           ; 3 / 10 ( 30 % )         ;
+;     -- Dedicated input pins                 ; 0 / 25 ( 0 % )          ;
+;                                             ;                         ;
+; M9Ks                                        ; 0 / 720 ( 0 % )         ;
+; Total block memory bits                     ; 0 / 6,635,520 ( 0 % )   ;
+; Total block memory implementation bits      ; 0 / 6,635,520 ( 0 % )   ;
+; Embedded Multiplier 9-bit elements          ; 0 / 720 ( 0 % )         ;
+; PLLs                                        ; 0 / 8 ( 0 % )           ;
+; Global signals                              ; 1                       ;
+;     -- Global clocks                        ; 1 / 30 ( 3 % )          ;
+; JTAGs                                       ; 0 / 1 ( 0 % )           ;
+; CRC blocks                                  ; 0 / 1 ( 0 % )           ;
+; ASMI blocks                                 ; 0 / 1 ( 0 % )           ;
+; Oscillator blocks                           ; 0 / 1 ( 0 % )           ;
+; GXB Receiver channel PCSs                   ; 0 / 8 ( 0 % )           ;
+; GXB Receiver channel PMAs                   ; 0 / 8 ( 0 % )           ;
+; GXB Transmitter channel PCSs                ; 0 / 8 ( 0 % )           ;
+; GXB Transmitter channel PMAs                ; 0 / 8 ( 0 % )           ;
+; Impedance control blocks                    ; 0 / 3 ( 0 % )           ;
+; Average interconnect usage (total/H/V)      ; 1.7% / 1.5% / 2.0%      ;
+; Peak interconnect usage (total/H/V)         ; 15.8% / 15.8% / 18.0%   ;
+; Maximum fan-out                             ; 4354                    ;
+; Highest non-global fan-out                  ; 1518                    ;
+; Total fan-out                               ; 33563                   ;
+; Average fan-out                             ; 2.74                    ;
++---------------------------------------------+-------------------------+
+*  Register count does not include registers inside RAM blocks or DSP blocks.
+
+
+
