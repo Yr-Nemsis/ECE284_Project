@@ -20,7 +20,7 @@ We provied a make file to compile and run the design.
 
 To compile an execute the verilog use
 ```
-    make all 
+make all 
 ```
 VCD file will be produced after execution the testbench verifies the produced psums and the generated outputs. 
 
