@@ -8,9 +8,9 @@ For parts 2, 3, 5 and 6 the verilog can be found at:
 
 ```
 Part 2 and 3/hardware
-Part5/hardware
-Part6/Dual_core/hardware
-Part6/Huffman/hardware
+Part 5/hardware
+Part 6/Dual_core/hardware
+Part 6/Huffman/hardware
 ```
 
 
