@@ -7,7 +7,7 @@ The verilog files setup for the execution can be found in hardware folder for ea
 For parts 2, 3, 5 and 6 the verilog can be found at:
 
 ```
-Part_2_and_3/hardware
+Part 2 and 3/hardware
 Part5/hardware
 Part6/Dual_core/hardware
 Part6/Huffman/hardware
